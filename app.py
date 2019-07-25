@@ -18,6 +18,7 @@ df = pd.read_csv('fullconcat.csv')
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+server = app.server
 
 # PLOTTING CONSTANTS
 materials = ["Au", "Ag", "Al", "Cu", "GaAs", "GaN", "GaP", "Si", "Ge"]
