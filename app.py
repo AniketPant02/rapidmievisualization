@@ -80,7 +80,7 @@ app.layout = html.Div(
                     )
                 ], className = 'three columns',
                 style = {
-                    "margin-right": 10,
+                    "marginRight": 10,
                     'float': "right"
                 })
             ], className="row"
@@ -104,7 +104,76 @@ app.layout = html.Div(
             ], className="row"
         ), # END ROW 2 LINE PLOTS
 
-        html.Div( # START ROW 3 SURF PLOTS
+        html.Div( # START ROW 3 SLIDERS FOR SURF PLOTS
+            [
+            html.Div([
+                dcc.Slider(
+                    min=1.0,
+                    max=3.0,
+                    step=0.2,
+                    value=1,
+                    id='diameter-slider',
+                    marks={
+                        1: "1",
+                        1.2: "1.2",
+                        1.4: "1.4",
+                        1.6: "1.6",
+                        1.8: "1.8",
+                        2: "2",
+                        2.2: "2.2",
+                        2.4: "2.4",
+                        2.6: "2.6",
+                        2.8: "2.8",
+                        3: "3"
+                    },
+                ),
+                ],
+                style = {
+                        'marginBottom': 10
+                    },
+                className= 'six columns'
+                ),
+
+                html.Div([
+                dcc.Slider(
+                    min=10,
+                    max=200,
+                    step=10,
+                    value=150,
+                    id='dielectric-slider',
+                    marks = {
+                            10: "10",
+                            20: "20",
+                            30: "30",
+                            40: "40",
+                            50: "50",
+                            60: "60",
+                            70: "70",
+                            80: "80",
+                            90: "90",
+                            100: "100",
+                            110: "110",
+                            120: "120",
+                            130: "130",
+                            140: "140",
+                            150: "150",
+                            160: "160",
+                            170: "170",
+                            180: "180",
+                            190: "190",
+                            200: "200"
+                    }
+                )
+                ], className= 'six columns'
+                )
+            ],
+            style = {
+                        'marginBottom': 10
+                    }, 
+            className="row"
+        ), # END ROW 3 SURF PLOTS,
+
+        html.Div( # START ROW 4 SURF PLOTS
             [
             html.Div([
                 dcc.Graph(
@@ -133,7 +202,10 @@ app.layout = html.Div(
                     target = "_blank"
 
                 )
-                ], className= 'six columns'
+                ], className= 'six columns',
+                style = {
+                    'marginTop': 20
+                }
                 ),
 
                 html.Div([
@@ -145,7 +217,10 @@ app.layout = html.Div(
                     target = "_blank"
 
                 )
-                ], className= 'six columns'
+                ], className= 'six columns',
+                style = {
+                    'marginTop': 20
+                }
                 )
             ], className="row"
         ) # END ROW 3 SURF PLOTS
@@ -163,20 +238,22 @@ app.layout = html.Div(
      Output('dielectric-download', 'href'),
     Output('diameter-download', 'download'),
      Output('dielectric-download', 'download')],
-    [Input('material-dropdown', 'value')])
-def update_site_with_material_choice(material):
+    [Input('material-dropdown', 'value'),
+     Input('diameter-slider', 'value'),
+     Input('dielectric-slider', 'value')])
+def update_site_with_material_choice(material, dielectric, diameter):
 
     # DATA PROCESSING FOR PLOTTING
     df_mat = df[df['Material'] == material]
 
     # GETTING DATA IN PLOTTING FORMAT
     # DIAMETER DATA
-    df_diameter = df_mat[df_mat['Medium Refractive Index'] == 1.0]
+    df_diameter = df_mat[df_mat['Medium Refractive Index'] == dielectric]
     df_diameter = df_diameter.set_index(df_diameter['Diameter (nm)'])
     df_diameter = df_diameter.drop(['Medium Refractive Index', 'Material', 'Diameter (nm)'], axis = 1)
 
     # DIELECTRIC DATA
-    df_dielectric = df_mat[df_mat['Diameter (nm)'] == 150]
+    df_dielectric = df_mat[df_mat['Diameter (nm)'] == diameter]
     df_dielectric = df_dielectric.set_index(df_dielectric['Medium Refractive Index'])
     df_dielectric = df_dielectric.drop(['Diameter (nm)', 'Material', 'Medium Refractive Index'], axis = 1)
 
@@ -185,11 +262,11 @@ def update_site_with_material_choice(material):
     d = datetime.datetime.today()
     diameter_csv_string = df_diameter.to_csv(index=True, encoding='utf-8')
     diameter_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(diameter_csv_string)
-    diameter_csv_filename = "{}_{}_{}_Material_{}_Env_Dielectric_1p0.csv".format(d.year, d.month, d.day, material)
+    diameter_csv_filename = "{}_{}_{}_Material_{}_Env_Dielectric_{}.csv".format(d.year, d.month, d.day, material, dielectric)
     # DIELECTRIC DOWNLOAD
     dielectric_csv_string = df_dielectric.to_csv(index=True, encoding='utf-8')
     dielectric_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(dielectric_csv_string)
-    dielectric_csv_filename = "{}_{}_{}_Material_{}_Diameter_150nm.csv".format(d.year, d.month, d.day, material)
+    dielectric_csv_filename = "{}_{}_{}_Material_{}_Diameter_{}.csv".format(d.year, d.month, d.day, material, diameter)
 
     # DIAMETER LINE PLOT
     return [{
@@ -203,7 +280,7 @@ def update_site_with_material_choice(material):
             )
         for i in range(len(diameters))],
         'layout': {
-            'title': '{}: Vary Diameter. n<sub>env</sub> = 1.0'.format(material),
+            'title': '{}: Vary Diameter. n<sub>env</sub> = {}'.format(material, dielectric),
             'xaxis' : dict(
                 title='Wavelength (nm)',
                 showline=True, linewidth=1, linecolor='black', mirror=True
@@ -226,7 +303,7 @@ def update_site_with_material_choice(material):
             )
         for i in range(len(n_envs))],
         'layout': {
-            'title': '{}: Vary Dielectric. Diameter = 150nm'.format(material),
+            'title': '{}: Vary Dielectric. Diameter = {}nm'.format(material, diameter),
             'xaxis' : dict(
                 title='Wavelength (nm)',
                 showline=True, linewidth=1, linecolor='black', mirror=True
@@ -251,7 +328,7 @@ def update_site_with_material_choice(material):
                     )
                 ],
         'layout': {
-            'title': '{}: Vary Diameter. n<sub>env</sub> = 1.0'.format(material),
+            'title': '{}: Vary Diameter. n<sub>env</sub> = {}'.format(material, dielectric),
             'xaxis' : dict(
                 title='Wavelength (nm)'
                 ),
@@ -274,7 +351,7 @@ def update_site_with_material_choice(material):
                     )
         ],
         'layout': {
-            'title': '{}: Vary Dielectric. Diameter = 150nm'.format(material),
+            'title': '{}: Vary Dielectric. Diameter = {}nm'.format(material, diameter),
             'xaxis': dict(
                 title = "Wavelength (nm)"
             ),
