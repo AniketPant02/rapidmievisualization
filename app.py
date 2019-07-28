@@ -6,6 +6,7 @@
 import pandas as pd
 import numpy as np
 import urllib.parse
+import datetime
 
 # WEBSITE CREATION
 import dash
@@ -159,7 +160,9 @@ app.layout = html.Div(
      Output('dielectric-surfplot', 'figure'),
      Output('page-title', 'children'),
      Output('diameter-download', 'href'),
-     Output('dielectric-download', 'href')],
+     Output('dielectric-download', 'href'),
+    Output('diameter-download', 'download'),
+     Output('dielectric-download', 'download')],
     [Input('material-dropdown', 'value')])
 def update_site_with_material_choice(material):
 
@@ -179,11 +182,14 @@ def update_site_with_material_choice(material):
 
     # MAKE CSV STRINGS FOR DF DOWNLOADS
     # DIAMETER DOWNLOAD
+    d = datetime.datetime.today()
     diameter_csv_string = df_diameter.to_csv(index=True, encoding='utf-8')
     diameter_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(diameter_csv_string)
+    diameter_csv_filename = "{}_{}_{}_Material_{}_Env_Dielectric_1p0.csv".format(d.year, d.month, d.day, material)
     # DIELECTRIC DOWNLOAD
     dielectric_csv_string = df_dielectric.to_csv(index=True, encoding='utf-8')
     dielectric_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(dielectric_csv_string)
+    dielectric_csv_filename = "{}_{}_{}_Material_{}_Diameter_150nm.csv".format(d.year, d.month, d.day, material)
 
     # DIAMETER LINE PLOT
     return [{
@@ -285,7 +291,13 @@ def update_site_with_material_choice(material):
     diameter_csv_string,
 
     # CSV for dielectric-download
-    dielectric_csv_string
+    dielectric_csv_string,
+
+    # Diameter filename
+    diameter_csv_filename,
+
+    # Dielectric filename
+    dielectric_csv_filename
 
     ]
 
