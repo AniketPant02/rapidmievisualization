@@ -112,6 +112,7 @@ app.layout = html.Div(
                     max=3.0,
                     step=0.2,
                     value=1,
+                    updatemode = 'drag',
                     id='diameter-slider',
                     marks={
                         1: "1",
@@ -140,6 +141,7 @@ app.layout = html.Div(
                     max=200,
                     step=10,
                     value=150,
+                    updatemode = 'drag',
                     id='dielectric-slider',
                     marks = {
                             10: "10",
