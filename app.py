@@ -2,12 +2,18 @@
 # Visualization of Mie Scattering from all Tested Configs
 # A generalized scripting tool for rapid plotting of generated Mie spectra.
 # Aniket Pant, UAB Plasmonics, 07/23/2019
+# DATA PROCESSING
 import pandas as pd
 import numpy as np
+import urllib.parse
+
+# WEBSITE CREATION
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+
+# PLOTTING
 from plotly.graph_objs import *
 import plotly.graph_objs as go
 from plotly import tools
@@ -113,6 +119,34 @@ app.layout = html.Div(
                 ], className= 'six columns'
                 )
             ], className="row"
+        ), # END ROW 3 SURF PLOTS,
+
+        html.Div( # START ROW 4 DOWNLOAD LINKS
+            [
+            html.Div([
+                html.A(
+                    "Download Diameter-index Data",
+                    id='diameter-download',
+                    download = 'diameter_data.csv',
+                    href = '',
+                    target = "_blank"
+
+                )
+                ], className= 'six columns'
+                ),
+
+                html.Div([
+                html.A(
+                    "Download Dielectric-index Data",
+                    id='dielectric-download',
+                    download = 'dielectric_data.csv',
+                    href = '',
+                    target = "_blank"
+
+                )
+                ], className= 'six columns'
+                )
+            ], className="row"
         ) # END ROW 3 SURF PLOTS
     ], className='ten columns offset-by-one')
 )
@@ -123,7 +157,9 @@ app.layout = html.Div(
      Output('dielectric-lineplot', 'figure'),
      Output('diameter-surfplot', 'figure'),
      Output('dielectric-surfplot', 'figure'),
-     Output('page-title', 'children')],
+     Output('page-title', 'children'),
+     Output('diameter-download', 'href'),
+     Output('dielectric-download', 'href')],
     [Input('material-dropdown', 'value')])
 def update_site_with_material_choice(material):
 
@@ -140,6 +176,14 @@ def update_site_with_material_choice(material):
     df_dielectric = df_mat[df_mat['Diameter (nm)'] == 150]
     df_dielectric = df_dielectric.set_index(df_dielectric['Medium Refractive Index'])
     df_dielectric = df_dielectric.drop(['Diameter (nm)', 'Material', 'Medium Refractive Index'], axis = 1)
+
+    # MAKE CSV STRINGS FOR DF DOWNLOADS
+    # DIAMETER DOWNLOAD
+    diameter_csv_string = df_diameter.to_csv(index=True, encoding='utf-8')
+    diameter_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(diameter_csv_string)
+    # DIELECTRIC DOWNLOAD
+    dielectric_csv_string = df_dielectric.to_csv(index=True, encoding='utf-8')
+    dielectric_csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(dielectric_csv_string)
 
     # DIAMETER LINE PLOT
     return [{
@@ -235,7 +279,14 @@ def update_site_with_material_choice(material):
     },
                     
     # TITLE FOR WEBSITE WITH MATERIAL TAG
-    "{}: Extinction Mie Spectra".format(material)
+    "{}: Extinction Mie Spectra".format(material),
+
+    # CSV for diameter-download
+    diameter_csv_string,
+
+    # CSV for dielectric-download
+    dielectric_csv_string
+
     ]
 
 if __name__ == '__main__':
